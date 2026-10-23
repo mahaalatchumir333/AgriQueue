@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2f5228">
+  <title>AgriQueue — Procurement &amp; Queue Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AgriQueue home">AgriQueue<span>Procurement &amp; Queue Portal</span></a>
+    <div id="userBar" class="user-bar hidden">
+      <span id="userLabel"></span>
+      <button class="btn btn-secondary" id="logoutBtn" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section id="authScreen" class="auth-layout">
+      <div class="welcome">
+        <p class="eyebrow">SMART PROCUREMENT</p>
+        <h1>Plan your visit.<br>Know your place in the queue.</h1>
+        <p>Book one procurement slot, get a digital token, and check your queue status from one place.</p>
+        <ul>
+          <li>Choose a centre and available service slot</li>
+          <li>Track booking and procurement status</li>
+          <li>Officials can manage intake and record actual quantity</li>
+        </ul>
+      </div>
+      <div class="auth-card panel">
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" id="loginTab" type="button" role="tab" aria-selected="true">Sign in</button>
+          <button class="auth-tab" id="registerTab" type="button" role="tab" aria-selected="false">Farmer registration</button>
+        </div>
+        <form id="loginForm">
+          <h2>Welcome back</h2>
+          <p class="muted">Farmers sign in with their mobile number. Officials use their account username.</p>
+          <label for="loginIdentifier">Mobile number or official username</label>
+          <input id="loginIdentifier" autocomplete="username" required maxlength="120">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required maxlength="256">
+          <button class="btn btn-primary full-width" type="submit">Sign in</button>
+        </form>
+        <form id="registerForm" class="hidden">
+          <h2>Create farmer account</h2>
+          <p class="muted">Use a password of at least 12 characters. Never enter your Aadhaar number here.</p>
+          <label for="fName">Full name</label>
+          <input id="fName" autocomplete="name" required maxlength="120">
+          <label for="fMobile">Mobile number</label>
+          <input id="fMobile" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" required>
+          <label for="fVillage">Village</label>
+          <input id="fVillage" autocomplete="address-level2" required maxlength="120">
+          <label for="fCrop">Primary crop</label>
+          <select id="fCrop" required></select>
+          <label for="fPassword">Create password</label>
+          <input id="fPassword" type="password" autocomplete="new-password" minlength="12" maxlength="256" required>
+          <button class="btn btn-primary full-width" type="submit">Register and continue</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="appShell" class="app-shell hidden">
+      <nav class="portal-nav" aria-label="Portal navigation">
+        <button class="nav-btn active farmer-only" data-view="farmerDashboard">My bookings</button>
+        <button class="nav-btn farmer-only" data-view="centres">Book a slot</button>
+        <button class="nav-btn active official-only hidden" data-view="officialDashboard">Operations dashboard</button>
+        <button class="nav-btn official-only hidden" data-view="officialBookings">Manage bookings</button>
+        <button class="nav-btn official-only hidden" data-view="officialFarmers">Farmers &amp; schemes</button>
+      </nav>
+
+      <section id="view-farmerDashboard" class="view">
+        <div class="page-heading">
+          <div><p class="eyebrow">FARMER PORTAL</p><h1>Your queue at a glance</h1></div>
+          <button class="btn btn-secondary" id="refreshFarmerBtn" type="button">Refresh status</button>
+        </div>
+        <div id="farmerBookings" class="booking-grid"></div>
+      </section>
+
+      <section id="view-centres" class="view hidden">
+        <div class="page-heading">
+          <div><p class="eyebrow">PLAN YOUR VISIT</p><h1>Book one procurement slot</h1></div>
+        </div>
+        <div class="content-grid">
+          <div class="panel">
+            <h2>Booking details</h2>
+            <form id="bookingForm">
+              <label for="bookCentre">Procurement centre</label>
+              <select id="bookCentre" required></select>
+              <label for="bookDate">Service date</label>
+              <input id="bookDate" type="date" required>
+              <label for="bookSlot">One time slot</label>
+              <select id="bookSlot" required></select>
+              <p id="availabilityInfo" class="field-hint">Choose a centre and date to check availability.</p>
+              <label for="bookQty">Expected quantity (kg)</label>
+              <input id="bookQty" type="number" min="1" max="100000" value="500" required>
+              <button class="btn btn-primary" type="submit">Book and generate token</button>
+            </form>
+          </div>
+          <div>
+            <div class="panel"><h2>Centres</h2><div id="centresList"></div></div>
+            <div class="notice">Payment is recorded by procurement officials. Online payments and SMS notifications are not connected yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-officialDashboard" class="view hidden">
+        <div class="page-heading">
+          <div><p class="eyebrow">OFFICIAL PORTAL</p><h1>Operations overview</h1></div>
+          <button class="btn btn-secondary" id="refreshOfficialBtn" type="button">Refresh data</button>
+        </div>
+        <div id="officialStats" class="stat-grid"></div>
+        <div class="panel"><h2>Centre workload today</h2><div class="table-wrap"><table>
+          <thead><tr><th>Centre</th><th>Daily capacity</th><th>Booked today</th><th>Queue now</th></tr></thead>
+          <tbody id="centreLoadBody"></tbody>
+        </table></div></div>
+        <div class="panel"><h2>Peak slots today</h2><div class="table-wrap"><table>
+          <thead><tr><th>Slot</th><th>Bookings</th><th>Share</th></tr></thead>
+          <tbody id="slotLoadBody"></tbody>
+        </table><p id="noSlotData" class="muted hidden">No bookings recorded for today.</p></div></div>
+      </section>
+
+      <section id="view-officialBookings" class="view hidden">
+        <div class="page-heading"><div><p class="eyebrow">PROCUREMENT</p><h1>Manage bookings</h1></div></div>
+        <div class="panel table-wrap"><table>
+          <thead><tr><th>Token / date</th><th>Farmer</th><th>Centre / slot</th><th>Expected kg</th><th>Received kg</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead>
+          <tbody id="adminBody"></tbody>
+        </table><div class="empty hidden" id="adminEmpty">No bookings yet.</div></div>
+      </section>
+
+      <section id="view-officialFarmers" class="view hidden">
+        <div class="page-heading"><div><p class="eyebrow">FARMER RECORDS</p><h1>Farmer IDs &amp; scheme tracking</h1></div></div>
+        <div class="notice">Scheme statuses are manually recorded and are not verified against government services. Do not enter Aadhaar or land-record numbers.</div>
+        <div class="panel table-wrap"><table>
+          <thead><tr><th>Farmer</th><th>Mobile / village</th><th>Kisan Farmer ID</th><th>PM-Kisan</th><th>PMFBY</th><th></th></tr></thead>
+          <tbody id="farmersBody"></tbody>
+        </table></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "config": { "minutesPerToken": 12 },
+  "slots": [
+    "8:00 AM - 10:00 AM",
+    "10:00 AM - 12:00 PM",
+    "12:00 PM - 2:00 PM",
+    "2:00 PM - 4:00 PM"
+  ],
+  "crops": ["Paddy", "Wheat", "Cotton", "Sugarcane", "Maize", "Groundnut"],
+  "centres": [
+    { "id": 1, "name": "Karamadai Procurement Centre",      "lat": 11.2500, "lng": 76.9500, "capacity": 40 },
+    { "id": 2, "name": "Mettupalayam Procurement Centre",   "lat": 11.2996, "lng": 76.9412, "capacity": 30 },
+    { "id": 3, "name": "Sathyamangalam Procurement Centre", "lat": 11.5040, "lng": 77.2380, "capacity": 25 },
+    { "id": 4, "name": "Pollachi Procurement Centre",       "lat": 10.6589, "lng": 77.0080, "capacity": 35 }
+  ],
+  "farmers": []
+}
